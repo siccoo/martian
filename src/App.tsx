@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { mockLogin } from "./mockAuth";
 
 export default function App() {
@@ -9,10 +9,18 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const successRef = useRef<HTMLParagraphElement>(null);
+
   const isEmailValid = /^\S+@\S+\.\S+$/.test(email);
   const isPasswordValid = password.length >= 6;
 
   const canSubmit = isEmailValid && isPasswordValid && !loading;
+
+  useEffect(() => {
+    if (success) {
+      successRef.current?.focus();
+    }
+  }, [success]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,19 +72,25 @@ export default function App() {
             required
           />
           {!isPasswordValid && password && (
-            <span className="hint">
-              Password must be at least 6 characters
-            </span>
+            <span className="hint">Password must be at least 6 characters</span>
           )}
         </div>
 
-        <button type="submit" disabled={!canSubmit}>
+        <button
+          type="submit"
+          disabled={!canSubmit}
+          className={loading ? "loading" : ""}
+        >
           {loading ? "Signing in…" : "Sign in"}
         </button>
 
         <div className="status" aria-live="polite">
           {error && <p className="error">{error}</p>}
-          {success && <p className="success">Signed in successfully...</p>}
+          {success && (
+            <p ref={successRef} tabIndex={-1} className="success">
+              Signed in successfully...
+            </p>
+          )}
         </div>
       </form>
     </main>
